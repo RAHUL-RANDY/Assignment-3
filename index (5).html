@@ -1,0 +1,351 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FrostyShop — Mini E‑Commerce Demo</title>
+  <style>
+    /* --- Basic Layout & Reset --- */
+    :root{--accent:#0f62fe;--muted:#6b7280;--bg:#f7fafc}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:var(--bg);color:#111}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:24px auto;padding:16px}/* --- Top Navigation --- */
+header{background:#fff;border-bottom:1px solid #e6edf3}
+nav.container{display:flex;gap:16px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:12px;align-items:center}
+.brand .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#7dd3fc,#60a5fa);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+ul.menu{list-style:none;display:flex;gap:12px;margin:0;padding:0}
+ul.menu li{padding:8px 12px;border-radius:8px}
+ul.menu li a:hover{background:#f1f5f9}
+.actions{display:flex;gap:8px;align-items:center}
+button.primary{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+button.ghost{background:transparent;border:1px solid #dbeafe;padding:8px 12px;border-radius:8px;cursor:pointer}
+
+/* --- Grid --- */
+main{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+.card{background:#fff;border-radius:12px;padding:14px;border:1px solid #eef2f7}
+
+/* --- Product Grid --- */
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.product{padding:12px;border-radius:10px;border:1px solid #eef2f7;display:flex;flex-direction:column;gap:8px}
+.product img{width:100%;height:140px;object-fit:cover;border-radius:8px}
+.product h4{margin:0;font-size:16px}
+.product .price{font-weight:700}
+.product .actions{margin-top:auto;display:flex;gap:8px}
+
+/* --- Forms --- */
+form .row{display:flex;gap:8px}
+label{font-size:13px;color:var(--muted)}
+input,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #e6edf3}
+.error{color:#b91c1c;font-size:13px}
+
+/* --- Right column widgets --- */
+.widget-list{display:flex;flex-direction:column;gap:12px}
+.small{font-size:13px;color:var(--muted)}
+
+/* --- Footer --- */
+footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+/* responsive */
+@media (max-width:900px){main{grid-template-columns:1fr}nav.container{flex-direction:column;align-items:flex-start}}
+
+  </style>
+</head>
+<body>
+  <!--
+    FrostyShop Demo
+    Single-file HTML/CSS/JS app demonstrating:
+    - Navigation menu (Home, Products, Contact, About)
+    - Registration & Login with input validation (stored in localStorage)
+    - Product list with add to cart / wishlist
+    - Orders list, Wishlist, Comments & Reviews, Customer Care, Reporting forms
+    How to use: Save this file as index.html and open in a browser.
+  -->  <header>
+    <nav class="container">
+      <div class="brand">
+        <div class="logo">FS</div>
+        <div>
+          <div style="font-weight:700">FrostyShop</div>
+          <div style="font-size:12px;color:var(--muted)">Mini E‑Commerce Demo</div>
+        </div>
+      </div><ul class="menu" id="mainMenu">
+    <li><a href="#home" data-nav>Home</a></li>
+    <li><a href="#products" data-nav>Products</a></li>
+    <li><a href="#contact" data-nav>Contact Us</a></li>
+    <li><a href="#about" data-nav>About Us</a></li>
+  </ul>
+
+  <div class="actions">
+    <div id="userBadge" style="display:none"></div>
+    <button class="ghost" id="btnOpenLogin">Login</button>
+    <button class="primary" id="btnOpenRegister">Register</button>
+  </div>
+</nav>
+
+  </header>  <main class="container">
+    <section>
+      <div id="home" class="card">
+        <h2>Welcome to FrostyShop</h2>
+        <p class="small">A demo e‑commerce portal built with HTML, CSS & JavaScript. Use the menu to navigate.</p>
+      </div><div id="products" class="card" style="margin-top:12px">
+    <h3>Products</h3>
+    <div class="products" id="productGrid"></div>
+  </div>
+
+  <div id="reviews" class="card" style="margin-top:12px">
+    <h3>Comments & Reviews</h3>
+    <div id="reviewsList" class="widget-list small"></div>
+    <hr />
+    <form id="reviewForm">
+      <label>Review (required)</label>
+      <textarea id="reviewText" rows="3" required></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button type="submit" class="primary">Post Review</button>
+        <button type="button" id="clearReviews" class="ghost">Clear All</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="orders" class="card" style="margin-top:12px">
+    <h3>Orders</h3>
+    <div id="ordersList" class="small"></div>
+    <div style="margin-top:8px"><button id="placeOrder" class="primary">Place Order (cart → orders)</button></div>
+  </div>
+
+  <div id="about" class="card" style="margin-top:12px">
+    <h3>About Us</h3>
+    <p class="small">FrostyShop demo built for educational purposes. This app stores users and simple state in your browser's localStorage.</p>
+  </div>
+</section>
+
+<aside>
+  <div class="widget-list">
+    <div class="card">
+      <h4>Account</h4>
+      <div id="accountArea" class="small">
+        <p>Not logged in.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Wishlist</h4>
+      <div id="wishlist" class="small"></div>
+    </div>
+
+    <div class="card">
+      <h4>Customer Care</h4>
+      <form id="careForm">
+        <label>Name</label>
+        <input id="careName" required />
+        <label>Issue</label>
+        <textarea id="careIssue" required></textarea>
+        <div style="margin-top:8px"><button class="primary" type="submit">Send</button></div>
+      </form>
+      <div id="careMsg" class="small" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <h4>Reporting</h4>
+      <form id="reportForm">
+        <label>Report Type</label>
+        <select id="reportType"><option>Bug</option><option>Content Issue</option><option>Seller Issue</option></select>
+        <label>Details</label>
+        <textarea id="reportDetails"></textarea>
+        <div style="margin-top:8px"><button class="primary" type="submit">Submit Report</button></div>
+      </form>
+      <div id="reportMsg" class="small" style="margin-top:8px"></div>
+    </div>
+  </div>
+</aside>
+
+  </main>  <footer class="container">
+    <p>Made with ❤️ — FrostyShop Demo</p>
+  </footer>  <!-- Hidden modals for Login/Register -->  <div id="modalRoot"></div>  <script>
+    /*************************
+      Demo JS: data + UI logic
+    *************************/
+
+    const sampleProducts = [
+      {id:1,title:'Vanilla Bean Ice Cream',price:299,img:'https://images.unsplash.com/photo-1604908177227-9c0b0b2b4d3e?auto=format&fit=crop&w=800&q=60'},
+      {id:2,title:'Strawberry Swirl',price:349,img:'https://images.unsplash.com/photo-1625944021408-cc0a19e5d1a8?auto=format&fit=crop&w=800&q=60'},
+      {id:3,title:'Choco Delight',price:329,img:'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=60'},
+      {id:4,title:'Mango Tango',price:279,img:'https://images.unsplash.com/photo-1599785209707-5bc3d2db7a6e?auto=format&fit=crop&w=800&q=60'}
+    ];
+
+    // --- localStorage helpers ---
+    function read(key, fallback){try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch(e){return fallback}}
+    function write(key, value){localStorage.setItem(key, JSON.stringify(value))}
+
+    // initialize storage if missing
+    if(!read('products')) write('products', sampleProducts)
+    if(!read('users')) write('users', [])
+    if(!read('session')) write('session', null)
+    if(!read('wishlist')) write('wishlist', [])
+    if(!read('cart')) write('cart', [])
+    if(!read('orders')) write('orders', [])
+    if(!read('reviews')) write('reviews', [])
+
+    // render product grid
+    function renderProducts(){
+      const grid = document.getElementById('productGrid');
+      const products = read('products',[]);
+      grid.innerHTML = '';
+      products.forEach(p=>{
+        const el = document.createElement('div');el.className='product';
+        el.innerHTML = `<img src="${p.img}" alt="${p.title}"><h4>${p.title}</h4><div class="price">₹ ${p.price}</div><div class="small">In stock</div><div class="actions"><button data-add="${p.id}" class="primary">Add to Cart</button><button data-wish="${p.id}" class="ghost">Wishlist</button></div>`;
+        grid.appendChild(el);
+      })
+    }
+
+    // Navigation helpers
+    document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();const id=a.getAttribute('href').slice(1);document.getElementById(id).scrollIntoView({behavior:'smooth'});
+    }))
+
+    // Account area
+    function renderAccount(){
+      const session = read('session',null);
+      const a = document.getElementById('accountArea');
+      const userBadge = document.getElementById('userBadge');
+      if(session && session.email){
+        a.innerHTML = `<div>Signed in as <strong>${session.name||session.email}</strong><div style="margin-top:8px"><button id="btnLogout" class="ghost">Logout</button></div></div>`;
+        userBadge.style.display='block';userBadge.innerHTML=`<div style="font-size:13px;color:var(--muted)">${session.name||session.email}</div>`;
+      } else {
+        a.innerHTML = `<p>Not logged in.</p>`;userBadge.style.display='none';
+      }
+      const logout = document.getElementById('btnLogout'); if(logout) logout.addEventListener('click',()=>{write('session',null);renderAccount();})
+    }
+
+    // Wishlist render
+    function renderWishlist(){
+      const wish = read('wishlist',[]);
+      const container = document.getElementById('wishlist');
+      if(wish.length===0) container.innerHTML = '<div class="small">No items in wishlist</div>';
+      else container.innerHTML = wish.map(id=>{
+        const p = read('products',[]).find(x=>x.id===id); return `<div>${p.title} — ₹ ${p.price} <button data-remove="${id}" class="ghost">Remove</button></div>`
+      }).join('');
+      container.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',e=>{
+        const id = +e.target.getAttribute('data-remove'); const arr = read('wishlist',[]).filter(x=>x!==id); write('wishlist',arr); renderWishlist();
+      }))
+    }
+
+    // Reviews
+    function renderReviews(){
+      const list = read('reviews',[]);
+      const el = document.getElementById('reviewsList');
+      if(list.length===0) el.innerHTML='<div class="small">No reviews yet.</div>'
+      else el.innerHTML = list.map(r=>`<div><strong>${r.name||'Guest'}</strong> <span class="small">(${new Date(r.date).toLocaleString()})</span><div class="small">${r.text}</div></div>`).join('<hr/>')
+    }
+
+    // Orders
+    function renderOrders(){
+      const orders = read('orders',[]);
+      const el = document.getElementById('ordersList');
+      if(orders.length===0) el.innerHTML='<div class="small">No orders placed.</div>'
+      else el.innerHTML = orders.map((o,idx)=>`<div><strong>Order #${idx+1}</strong> — Items: ${o.items.length} — Total: ₹ ${o.total} <div class="small">${new Date(o.date).toLocaleString()}</div></div>`).join('<hr/>')
+    }
+
+    // wire product actions (cart & wishlist)
+    document.addEventListener('click',e=>{
+      if(e.target.matches('[data-add]')){
+        const id = +e.target.getAttribute('data-add');
+        const cart = read('cart',[]); cart.push(id); write('cart',cart); alert('Added to cart')
+      }
+      if(e.target.matches('[data-wish]')){
+        const id = +e.target.getAttribute('data-wish');
+        const wish = read('wishlist',[]); if(!wish.includes(id)) wish.push(id); write('wishlist',wish); renderWishlist();
+      }
+    })
+
+    // Place order (cart -> orders)
+    document.getElementById('placeOrder').addEventListener('click',()=>{
+      const cart = read('cart',[]); if(cart.length===0){alert('Cart is empty');return}
+      const products = read('products',[]);
+      const items = cart.map(id=>products.find(p=>p.id===id));
+      const total = items.reduce((s,i)=>s+(i?.price||0),0);
+      const orders = read('orders',[]); orders.push({items:cart,total,date:Date.now()}); write('orders',orders); write('cart',[]); renderOrders(); alert('Order placed')
+    })
+
+    // Reviews form
+    document.getElementById('reviewForm').addEventListener('submit',e=>{
+      e.preventDefault(); const text = document.getElementById('reviewText').value.trim(); if(!text){alert('Please add a review');return}
+      const session = read('session',null); const reviews = read('reviews',[]); reviews.unshift({name:session?.name, text, date:Date.now()}); write('reviews',reviews); document.getElementById('reviewText').value=''; renderReviews();
+    })
+    document.getElementById('clearReviews').addEventListener('click',()=>{if(confirm('Clear all reviews?')){write('reviews',[]);renderReviews()}})
+
+    // Customer care form
+    document.getElementById('careForm').addEventListener('submit',e=>{e.preventDefault();const n=document.getElementById('careName').value.trim();const i=document.getElementById('careIssue').value.trim(); if(!n||!i){document.getElementById('careMsg').innerText='Please fill all fields';return} document.getElementById('careMsg').innerText='Thanks — we will reply in 24-48 hours (demo)'; e.target.reset();})
+
+    // Report form
+    document.getElementById('reportForm').addEventListener('submit',e=>{e.preventDefault();document.getElementById('reportMsg').innerText='Report submitted — thank you'; e.target.reset();})
+
+    // Simple modal creation (login/register)
+    function openModal(html){const root=document.getElementById('modalRoot');const modal=document.createElement('div');modal.className='modal';modal.innerHTML=`<div style="position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999"> <div style="width:100%;max-width:480px">${html}<div style="text-align:right;margin-top:8px"><button id="closeModal" class="ghost">Close</button></div></div></div>`;root.appendChild(modal);document.getElementById('closeModal').addEventListener('click',()=>modal.remove()); return modal}
+
+    // Build register modal with validation
+    function openRegister(){
+      const html = `
+        <div class="card">
+          <h3>Create account</h3>
+          <form id="regForm">
+            <label>Full name</label>
+            <input id="regName" required />
+            <label>Email</label>
+            <input id="regEmail" required />
+            <label>Password (min 6 chars)</label>
+            <input id="regPass" type="password" required />
+            <label>Confirm password</label>
+            <input id="regPass2" type="password" required />
+            <div style="margin-top:8px"><button class="primary" type="submit">Register</button></div>
+            <div id="regError" class="error"></div>
+          </form>
+        </div>`;
+      const modal = openModal(html);
+      modal.querySelector('#regForm').addEventListener('submit',e=>{
+        e.preventDefault(); const name=modal.querySelector('#regName').value.trim(); const email=modal.querySelector('#regEmail').value.trim(); const pass=modal.querySelector('#regPass').value; const pass2=modal.querySelector('#regPass2').value; const err=modal.querySelector('#regError'); err.innerText='';
+        // basic validations
+        if(!name) return err.innerText='Please enter name';
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err.innerText='Enter a valid email';
+        if(pass.length<6) return err.innerText='Password must be at least 6 characters';
+        if(pass!==pass2) return err.innerText='Passwords do not match';
+        const users = read('users',[]); if(users.find(u=>u.email===email)) return err.innerText='Email already registered';
+        users.push({name,email,password:pass}); write('users',users); write('session',{email,name}); alert('Registration successful'); modal.remove(); renderAccount();
+      })
+    }
+
+    // Login modal with validation
+    function openLogin(){
+      const html = `
+        <div class="card">
+          <h3>Login</h3>
+          <form id="loginForm">
+            <label>Email</label>
+            <input id="loginEmail" required />
+            <label>Password</label>
+            <input id="loginPass" type="password" required />
+            <div style="margin-top:8px"><button class="primary" type="submit">Login</button></div>
+            <div id="loginError" class="error"></div>
+          </form>
+        </div>`;
+      const modal = openModal(html);
+      modal.querySelector('#loginForm').addEventListener('submit',e=>{
+        e.preventDefault(); const email=modal.querySelector('#loginEmail').value.trim(); const pass=modal.querySelector('#loginPass').value; const err=modal.querySelector('#loginError'); err.innerText='';
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err.innerText='Enter a valid email';
+        const users = read('users',[]); const found = users.find(u=>u.email===email && u.password===pass);
+        if(!found) return err.innerText='Invalid credentials';
+        write('session',{email, name:found.name}); alert('Login successful'); modal.remove(); renderAccount();
+      })
+    }
+
+    // wire open buttons
+    document.getElementById('btnOpenRegister').addEventListener('click',openRegister)
+    document.getElementById('btnOpenLogin').addEventListener('click',openLogin)
+
+    // initial render
+    renderProducts(); renderWishlist(); renderReviews(); renderOrders(); renderAccount();
+
+    // Accessibility: allow pressing Enter on modal inputs to submit via native form
+  </script></body>
+</html>
